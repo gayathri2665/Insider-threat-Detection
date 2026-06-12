@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Insider Threat Detection Engine</title>
+    <!-- Google Fonts Outfit & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-fontawesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fa-solid fa-shield-halved glow-icon"></i>
+                <h2>AEGIS DB</h2>
+                <span>Evidential SecOps</span>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="active" id="btn-nav-dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+                <a href="#" id="btn-nav-profiles"><i class="fa-solid fa-users-gear"></i> User Profiles</a>
+                <a href="#" id="btn-nav-logs"><i class="fa-solid fa-file-invoice"></i> SQL Audit Log</a>
+                <a href="#" id="btn-nav-benchmark"><i class="fa-solid fa-chart-line"></i> Benchmark Suite</a>
+            </nav>
+            <div class="system-status">
+                <div class="status-indicator online"></div>
+                <span>Monitor Active (Wazuh)</span>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header class="topbar">
+                <div class="search-box">
+                    <h1>Cybersecurity Command Console</h1>
+                    <p>Real-time uncertainty-aware anomaly detection engine</p>
+                </div>
+                <div class="drift-indicator">
+                    <i class="fa-solid fa-wave-square"></i>
+                    <span>Adaptive Threshold: <strong id="val-drift-threshold">0.50</strong></span>
+                </div>
+            </header>
+
+            <!-- Stats Bar -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon info"><i class="fa-solid fa-database"></i></div>
+                    <div class="stat-info">
+                        <h3>Total SQL Queries</h3>
+                        <span id="stat-total-queries">0</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon warning"><i class="fa-solid fa-users"></i></div>
+                    <div class="stat-info">
+                        <h3>Monitored Users</h3>
+                        <span id="stat-total-users">0</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon threat"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div class="stat-info">
+                        <h3>Detected Alerts</h3>
+                        <span id="stat-total-alerts" class="threat-glow">0</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon success"><i class="fa-solid fa-shield-check"></i></div>
+                    <div class="stat-info">
+                        <h3>Reviewed Alerts</h3>
+                        <span id="stat-reviewed-alerts">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard View -->
+            <div class="view-section" id="view-dashboard">
+                <div class="two-column-layout">
+                    <!-- Left: Realtime Alerts -->
+                    <div class="panel main-panel">
+                        <div class="panel-header">
+                            <h2><i class="fa-solid fa-bell"></i> Live Security Alerts Feed</h2>
+                            <span class="pulse-icon"><i class="fa-solid fa-circle"></i> Streaming</span>
+                        </div>
+                        <div class="table-container">
+                            <table id="table-alerts">
+                                <thead>
+                                    <tr>
+                                        <th>Risk</th>
+                                        <th>Username</th>
+                                        <th>Threat Score</th>
+                                        <th>Confidence</th>
+                                        <th>Status</th>
+                                        <th>Timestamp</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dynamic rows -->
+                                    <tr class="placeholder-row">
+                                        <td colspan="7" style="text-align: center; color: var(--color-text-muted);">No security alerts detected. Run a simulation trigger.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right: Simulation triggers -->
+                    <div class="panel side-panel">
+                        <div class="panel-header">
+                            <h2><i class="fa-solid fa-circle-play"></i> Attack Simulation Console</h2>
+                        </div>
+                        <p class="panel-subtitle">Inject synthetic user activities to test real-time detection & alert generation.</p>
+                        <div class="trigger-buttons-grid">
+                            <button class="btn-trigger" data-scenario="mass_data_exfiltration">
+                                <i class="fa-solid fa-file-export"></i>
+                                <span>Mass Exfiltration</span>
+                                <small>Alice off-hours salaries download</small>
+                            </button>
+                            <button class="btn-trigger" data-scenario="privilege_escalation">
+                                <i class="fa-solid fa-user-shield"></i>
+                                <span>Privilege Escalation</span>
+                                <small>Bob admin commands & denied access</small>
+                            </button>
+                            <button class="btn-trigger" data-scenario="sql_injection">
+                                <i class="fa-solid fa-syringe"></i>
+                                <span>SQL Injection</span>
+                                <small>Charlie '1'='1' UNION patterns</small>
+                            </button>
+                            <button class="btn-trigger" data-scenario="off_hours_burst">
+                                <i class="fa-solid fa-bolt"></i>
+                                <span>Off-Hours Query Burst</span>
+                                <small>Charlie rapid 3 AM query burst</small>
+                            </button>
+                            <button class="btn-trigger" data-scenario="hijacked_service_account">
+                                <i class="fa-solid fa-robot"></i>
+                                <span>Hijacked Account</span>
+                                <small>Service account administrative ops</small>
+                            </button>
+                            <button class="btn-trigger" data-scenario="repeated_failed_logins">
+                                <i class="fa-solid fa-key"></i>
+                                <span>Brute Force</span>
+                                <small>Repeated failed login brute-force</small>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profiles View -->
+            <div class="view-section hidden" id="view-profiles">
+                <div class="panel full-panel">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-users-gear"></i> Active User Behavioral Baselines</h2>
+                    </div>
+                    <div class="table-container">
+                        <table id="table-profiles">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Role</th>
+                                    <th>Avg Queries / Session</th>
+                                    <th>Avg Sensitive Access</th>
+                                    <th>Avg Privileged Operations</th>
+                                    <th>Off-Hours Activity Ratio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs View -->
+            <div class="view-section hidden" id="view-logs">
+                <div class="panel full-panel">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-file-invoice"></i> Database Activity Audit Logs (Wazuh Feed)</h2>
+                    </div>
+                    <div class="table-container">
+                        <table id="table-logs">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>User</th>
+                                    <th>Query Type</th>
+                                    <th>Query Text</th>
+                                    <th>Tables Accessed</th>
+                                    <th>Bytes</th>
+                                    <th>Exec Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Benchmark View -->
+            <div class="view-section hidden" id="view-benchmark">
+                <div class="two-column-layout">
+                    <!-- Metrics Table -->
+                    <div class="panel main-panel">
+                        <div class="panel-header">
+                            <h2><i class="fa-solid fa-microchip"></i> Anomaly Models Comparison Benchmark</h2>
+                            <button id="btn-run-evaluation" class="btn-primary"><i class="fa-solid fa-rotate"></i> Run Evaluation</button>
+                        </div>
+                        <div class="table-container">
+                            <table id="table-evaluation">
+                                <thead>
+                                    <tr>
+                                        <th>Model Name</th>
+                                        <th>Accuracy</th>
+                                        <th>Precision</th>
+                                        <th>Recall</th>
+                                        <th>F1-Score</th>
+                                        <th>FPR</th>
+                                        <th>FNR</th>
+                                        <th>Inference Latency</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="placeholder-row">
+                                        <td colspan="8" style="text-align: center; color: var(--color-text-muted);">Click "Run Evaluation" to calculate comparison metrics.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="evaluation-loader hidden">
+                            <i class="fa-solid fa-circle-notch fa-spin"></i> Running models suite benchmarks on test dataset...
+                        </div>
+                    </div>
+
+                    <!-- Performance Plots -->
+                    <div class="panel side-panel">
+                        <div class="panel-header">
+                            <h2><i class="fa-solid fa-chart-line"></i> Model Performance Analytics</h2>
+                        </div>
+                        <div class="charts-comparison">
+                            <div class="chart-wrapper">
+                                <h3>ROC / PR Curve Visualizations</h3>
+                                <div class="chart-img-placeholder">
+                                    <i class="fa-solid fa-chart-area"></i>
+                                    <p>Run the evaluation benchmark to view metric comparisons.</p>
+                                </div>
+                                <canvas id="chart-evaluation-roc" class="hidden"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Alert Inspection Modal (Glassmorphic) -->
+    <div class="modal-backdrop hidden" id="modal-alert-inspect">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-shield-circle-exclamation"></i> Security Alert Inspection</h2>
+                <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <!-- Alert general details -->
+                <div class="alert-details-grid">
+                    <div class="detail-tile">
+                        <span>Risk Level</span>
+                        <strong id="modal-alert-risk" class="badge">N/A</strong>
+                    </div>
+                    <div class="detail-tile">
+                        <span>Database User</span>
+                        <strong id="modal-alert-user">N/A</strong>
+                    </div>
+                    <div class="detail-tile">
+                        <span>Threat Score</span>
+                        <strong id="modal-alert-threat">N/A</strong>
+                    </div>
+                    <div class="detail-tile">
+                        <span>Confidence Score</span>
+                        <strong id="modal-alert-confidence">N/A</strong>
+                    </div>
+                    <div class="detail-tile">
+                        <span>Uncertainty Score</span>
+                        <strong id="modal-alert-uncertainty">N/A</strong>
+                    </div>
+                </div>
+
+                <div class="alert-desc-panel">
+                    <h3>Description</h3>
+                    <p id="modal-alert-desc">N/A</p>
+                </div>
+
+                <!-- Explanation / Chart -->
+                <div class="two-column-modal-layout">
+                    <div class="explain-chart-panel">
+                        <h3>Model Gradient Saliency Explainability</h3>
+                        <div style="height: 220px; position: relative;">
+                            <canvas id="chart-alert-saliency"></canvas>
+                        </div>
+                        <p class="chart-disclaimer">Identifies feature contribution percentages driving the Evidential threat score decision.</p>
+                    </div>
+                    
+                    <div class="remediation-panel">
+                        <h3>Recommended Action Plan</h3>
+                        <div class="remediation-steps" id="modal-alert-actions">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feedback Loop Submission -->
+                <div class="feedback-panel">
+                    <h3>Administrator Quality Review & Model Adaptation</h3>
+                    <form id="form-alert-feedback">
+                        <input type="hidden" id="feedback-alert-id">
+                        <div class="form-group-row">
+                            <div class="form-group">
+                                <label for="feedback-type">Verification Status</label>
+                                <select id="feedback-type" required>
+                                    <option value="">-- Select Decision --</option>
+                                    <option value="TRUE_POSITIVE">True Positive (Confirmed Malicious Threat)</option>
+                                    <option value="FALSE_POSITIVE">False Positive (Approved Normal Drift)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="feedback-comments">Comments / Rationale</label>
+                                <input type="text" id="feedback-comments" placeholder="Describe authorization notes or threat details..." required>
+                            </div>
+                            <button type="submit" class="btn-submit-feedback"><i class="fa-solid fa-floppy-disk"></i> Submit & Retrain</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
