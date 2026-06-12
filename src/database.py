@@ -15,10 +15,18 @@ class DatabaseManager:
     def __init__(self, use_mysql=False, mysql_config=None):
         self.use_mysql = use_mysql and MYSQL_AVAILABLE
         self.mysql_config = mysql_config or {}
-        self.db_path = Path("data/security_monitor.db")
+        
+        # VERCEL COMPATIBILITY: Use /tmp directory for writeable database in Serverless environment
+        if os.environ.get('VERCEL'):
+            self.db_path = Path("/tmp/security_monitor.db")
+        else:
+            self.db_path = Path("data/security_monitor.db")
         
         # Ensure data directory exists
-        os.makedirs("data", exist_ok=True)
+        if os.environ.get('VERCEL'):
+            os.makedirs("/tmp", exist_ok=True)
+        else:
+            os.makedirs("data", exist_ok=True)
         
         # Initialize connection
         self.conn = None
@@ -70,9 +78,11 @@ class DatabaseManager:
 
     def initialize_schema(self):
         """Reads schema.sql and creates tables if they don't exist."""
-        schema_path = Path("schema.sql")
+        # Absolute path relative to database.py file
+        schema_path = Path(__file__).parent.parent / "schema.sql"
         if not schema_path.exists():
-            # If not in local directory, check parent
+            schema_path = Path("schema.sql")
+        if not schema_path.exists():
             schema_path = Path("../schema.sql")
             
         if not schema_path.exists():

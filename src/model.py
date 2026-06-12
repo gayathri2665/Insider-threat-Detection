@@ -40,8 +40,13 @@ class EvidentialDetector:
         self.batch_size = batch_size
         self.model = EvidentialNetwork(input_dim=input_dim, num_classes=2)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr, weight_decay=1e-5)
-        self.model_dir = "data/models"
-        os.makedirs(self.model_dir, exist_ok=True)
+        
+        # Absolute path relative to this file to support running on Vercel
+        self.model_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "models"))
+        try:
+            os.makedirs(self.model_dir, exist_ok=True)
+        except Exception:
+            pass
 
     @staticmethod
     def loss_fn(alpha, y, epoch, max_epochs):
@@ -100,8 +105,11 @@ class EvidentialDetector:
                 avg_loss = epoch_loss / len(X)
                 # print(f"Epoch {epoch}/{self.epochs} - Loss: {avg_loss:.4f}")
                 
-        # Save model weights after training
-        torch.save(self.model.state_dict(), f"{self.model_dir}/evidential_model.pth")
+        # Save model weights after training (ignore read-only file systems like Vercel)
+        try:
+            torch.save(self.model.state_dict(), f"{self.model_dir}/evidential_model.pth")
+        except Exception as e:
+            print(f"[!] Warning: Could not save model weights (read-only filesystem): {e}")
         
     def load(self):
         """Loads model weights."""
@@ -183,7 +191,7 @@ class AutoencoderDetector:
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
         self.criterion = nn.MSELoss()
         self.threshold = 1.5 # Will be set dynamically based on reconstruction errors on normal data
-        self.model_dir = "data/models"
+        self.model_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "models"))
         
     def train(self, X_normal):
         """Trains on Normal data only (unsupervised anomaly detection)."""
@@ -209,10 +217,13 @@ class AutoencoderDetector:
             errors = torch.mean((reconstructed_all - X_tensor)**2, dim=1).numpy()
             self.threshold = float(np.percentile(errors, 95))
             
-        torch.save({
-            "state_dict": self.model.state_dict(),
-            "threshold": self.threshold
-        }, f"{self.model_dir}/autoencoder_model.pth")
+        try:
+            torch.save({
+                "state_dict": self.model.state_dict(),
+                "threshold": self.threshold
+            }, f"{self.model_dir}/autoencoder_model.pth")
+        except Exception as e:
+            print(f"[!] Warning: Could not save Autoencoder weights (read-only filesystem): {e}")
         
     def load(self):
         path = f"{self.model_dir}/autoencoder_model.pth"

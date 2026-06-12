@@ -149,8 +149,14 @@ def trigger_scenario():
         return jsonify({"error": "Missing scenario parameter"}), 400
         
     try:
-        # Trigger simulation (writes to mysql_audit.log, which is tail-picked by the thread)
-        simulator.trigger_threat_scenario(scenario)
+        # Trigger simulation (writes to mysql_audit.log)
+        logs = simulator.trigger_threat_scenario(scenario)
+        
+        # VERCEL COMPATIBILITY: Direct synchronous log processing in serverless environment
+        if os.environ.get('VERCEL') and logs:
+            for log in logs:
+                process_incoming_log(log)
+                
         return jsonify({"status": "success", "message": f"Triggered scenario: {scenario}"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
