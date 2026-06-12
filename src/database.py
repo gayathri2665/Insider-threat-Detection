@@ -32,6 +32,86 @@ class DatabaseManager:
         self.conn = None
         self.connect()
         self.initialize_schema()
+        self.seed_default_data_if_empty()
+
+    def seed_default_data_if_empty(self):
+        """Seeds default users and behavioral profile baselines if database is empty.
+        This ensures web dashboards work out-of-the-box on serverless (Vercel) environments.
+        """
+        try:
+            # Check if users are empty
+            user_count = self.fetch_one("SELECT COUNT(*) as cnt FROM users")
+            if user_count and user_count["cnt"] == 0:
+                print("[*] Seeding default users and profiles for Vercel/serverless environments...")
+                # 1. Insert users
+                users_to_create = [
+                    ("alice_hr", "HR", 3),
+                    ("bob_dev", "Developer", 2),
+                    ("charlie_analyst", "Analyst", 4),
+                    ("service_acc", "ServiceAccount", 5),
+                    ("stranger_danger", "Guest", 1)
+                ]
+                for username, role, clearance in users_to_create:
+                    self.insert_user(username, role, clearance)
+                    
+                # 2. Insert default profiles (matching simulated baselines)
+                default_profiles = {
+                    "alice_hr": {
+                        "query_count_mean": 14.18, "query_count_std": 3.2,
+                        "failed_query_count_mean": 0.05, "failed_query_count_std": 0.2,
+                        "sensitive_access_mean": 4.60, "sensitive_access_std": 1.2,
+                        "privileged_op_mean": 0.0, "privileged_op_std": 0.1,
+                        "log_bytes_returned_mean": 6.8, "log_bytes_returned_std": 1.1,
+                        "avg_execution_time_mean": 24.5, "avg_execution_time_std": 8.0,
+                        "off_hours_ratio": 0.0, "select_ratio_mean": 0.8, "select_ratio_std": 0.1,
+                        "session_count": 50
+                    },
+                    "bob_dev": {
+                        "query_count_mean": 13.96, "query_count_std": 2.9,
+                        "failed_query_count_mean": 0.05, "failed_query_count_std": 0.2,
+                        "sensitive_access_mean": 0.0, "sensitive_access_std": 0.1,
+                        "privileged_op_mean": 0.0, "privileged_op_std": 0.1,
+                        "log_bytes_returned_mean": 5.9, "log_bytes_returned_std": 1.3,
+                        "avg_execution_time_mean": 16.2, "avg_execution_time_std": 5.0,
+                        "off_hours_ratio": 0.0, "select_ratio_mean": 0.55, "select_ratio_std": 0.15,
+                        "session_count": 50
+                    },
+                    "charlie_analyst": {
+                        "query_count_mean": 14.12, "query_count_std": 3.5,
+                        "failed_query_count_mean": 0.05, "failed_query_count_std": 0.2,
+                        "sensitive_access_mean": 0.0, "sensitive_access_std": 0.1,
+                        "privileged_op_mean": 0.0, "privileged_op_std": 0.1,
+                        "log_bytes_returned_mean": 8.2, "log_bytes_returned_std": 1.4,
+                        "avg_execution_time_mean": 125.0, "avg_execution_time_std": 30.0,
+                        "off_hours_ratio": 0.0, "select_ratio_mean": 1.0, "select_ratio_std": 0.05,
+                        "session_count": 50
+                    },
+                    "service_acc": {
+                        "query_count_mean": 2.0, "query_count_std": 0.1,
+                        "failed_query_count_mean": 0.0, "failed_query_count_std": 0.05,
+                        "sensitive_access_mean": 0.0, "sensitive_access_std": 0.05,
+                        "privileged_op_mean": 0.0, "privileged_op_std": 0.05,
+                        "log_bytes_returned_mean": 6.2, "log_bytes_returned_std": 0.2,
+                        "avg_execution_time_mean": 3.0, "avg_execution_time_std": 0.5,
+                        "off_hours_ratio": 0.56, "select_ratio_mean": 1.0, "select_ratio_std": 0.05,
+                        "session_count": 50
+                    },
+                    "stranger_danger": {
+                        "query_count_mean": 10.0, "query_count_std": 3.0,
+                        "failed_query_count_mean": 0.1, "failed_query_count_std": 0.5,
+                        "sensitive_access_mean": 0.05, "sensitive_access_std": 0.5,
+                        "privileged_op_mean": 0.01, "privileged_op_std": 0.1,
+                        "log_bytes_returned_mean": 6.0, "log_bytes_returned_std": 1.5,
+                        "avg_execution_time_mean": 15.0, "avg_execution_time_std": 10.0,
+                        "off_hours_ratio": 0.05, "select_ratio_mean": 0.7, "select_ratio_std": 0.2,
+                        "session_count": 5
+                    }
+                }
+                for username, profile_dict in default_profiles.items():
+                    self.save_user_profile(username, profile_dict)
+                print("[+] Seeding complete.")
+        except Exception as e:
+            print(f"[!] Database auto-seeding error: {e}")
 
     def connect(self):
         """Establishes database connection."""
